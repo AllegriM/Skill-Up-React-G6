@@ -1,10 +1,18 @@
 import { useState } from "react";
-import axios from "axios";
-import useFetchData from "./useFetchData";
 
 export function useAccessControl() {
+  const [stateLogin, setStateLogin] = useState({
+    error: false,
+    correct: false,
+  });
+
+  const [stateSignUp, setStateSignUp] = useState({
+    error: false,
+    correct: false,
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [resultLogin, setResultLogin] = useState();
+  const [resultLogin, setResultLogin] = useState({});
   const [token, setToken] = useState("");
   const [dataLogin, setDataLogin] = useState({
     email: "",
@@ -21,18 +29,25 @@ export function useAccessControl() {
   // SIGN-UP
   async function signUp(e) {
     e.preventDefault();
+
     try {
       console.log("SIGN-UP-FORM: ", dataSignUp);
-      const response = await fetch("http://wallet-main.eba-ccwdurgr.us-east-1.elasticbeanstalk.com/users",{
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(dataSignUp),
-      })
-      const data = await response.json()
-      console.log("SIGN-UP-RESPONSE: ", data)
+      const response = await fetch(
+        "http://wallet-main.eba-ccwdurgr.us-east-1.elasticbeanstalk.com/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(dataSignUp),
+        }
+      );
+
+      const data = await response.json();
+      setStateSignUp({...stateSignUp, error: false, correct: true });
+      console.log("SIGN-UP-RESPONSE: ", data);
+
       setDataSignUp({
         ...dataSignUp,
         first_name: "",
@@ -41,6 +56,7 @@ export function useAccessControl() {
         password: "",
       });
     } catch (error) {
+      setStateSignUp({...stateSignUp, error: true, correct: false });
       console.log("Error: ", error);
       setDataSignUp({
         ...dataSignUp,
@@ -56,45 +72,59 @@ export function useAccessControl() {
   // LOGIN
   async function login(e) {
     e.preventDefault();
+
     try {
-      const response = await fetch("http://wallet-main.eba-ccwdurgr.us-east-1.elasticbeanstalk.com/auth/login", {
-        body: JSON.stringify(dataLogin),
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        method: "POST"
-      })
-      const data = await response.json()
+      const response = await fetch(
+        "http://wallet-main.eba-ccwdurgr.us-east-1.elasticbeanstalk.com/auth/login",
+        {
+          body: JSON.stringify(dataLogin),
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        }
+      );
+
+      const data = await response.json();
+      setStateLogin({...stateLogin, error: false, correct: true });
       setDataLogin({ ...dataLogin, email: "", password: "" });
-      setIsAuthenticated(true);
       getLogin(data.accessToken);
-    } catch (error){
+
+    } catch (error) {
       console.log("Error: ", error);
+      setStateLogin({...stateLogin, error: true, correct: false})
       setDataLogin({ ...dataLogin, email: "", password: "" });
-      setIsAuthenticated(false);
     }
   }
-  console.log(isAuthenticated)
+
   // GET LOGIN
   async function getLogin(token) {
+    // STATES - Auth - Token
+    setIsAuthenticated(true);
+    setToken(token);
+
     try {
-      setToken(token);
       const bearerToken = `Bearer ${token}`;
-      const response = await fetch("http://wallet-main.eba-ccwdurgr.us-east-1.elasticbeanstalk.com/auth/me", {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: bearerToken
-        },
-        method: "GET"
-      })
-      const data = await response.json()
-      console.log(data)
+      const response = await fetch(
+        "http://wallet-main.eba-ccwdurgr.us-east-1.elasticbeanstalk.com/auth/me",
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: bearerToken,
+          },
+          method: "GET",
+        }
+      );
+      const data = await response.json();
       setResultLogin(data);
+      localStorage.setItem("loggedInUser", JSON.stringify(data));
+      sessionStorage.setItem("tokenUser", JSON.stringify(token));
+
     } catch (error) {
-      console.log(error)
-    } 
+      console.log("Error: ", error);
+    }
   }
 
   return {
@@ -105,5 +135,8 @@ export function useAccessControl() {
     isAuthenticated,
     dataSignUp,
     dataLogin,
+    resultLogin,
+    stateLogin,
+    stateSignUp,
   };
 }

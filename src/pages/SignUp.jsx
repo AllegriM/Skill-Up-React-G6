@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom";
 import { useAccessControl } from "../hooks/useAccessControl";
+import { BsFillCheckCircleFill } from "react-icons/bs";
+import { AiOutlineCloseCircle } from "react-icons/ai";
 
 export function SignUp() {
-  const { signUp, dataSignUp, setDataSignUp } = useAccessControl();
+  const { signUp, dataSignUp, setDataSignUp, stateSignUp } = useAccessControl();
 
   const handleChangeValueSignUp = (e) => {
     setDataSignUp({ ...dataSignUp, [e.target.name]: e.target.value });
   };
+
+  const { error, correct } = stateSignUp;
 
   return (
     <>
@@ -60,6 +64,18 @@ export function SignUp() {
                 required
               />
             </label>
+            {correct && (
+              <p className="flex flex-row items-center text-lg text-center font-semibold">
+                Usuario creado con éxito
+                <BsFillCheckCircleFill className="ml-3 text-3xl text-green-500" />
+              </p>
+            )}
+            {error && (
+              <p className="flex flex-row items-center text-lg text-center font-semibold ">
+                Surgió un error: usuario no creado{" "}
+                <AiOutlineCloseCircle className="ml-3 text-4xl text-red-600" />
+              </p>
+            )}
             <button className="w-40 h-11 mt-10 p-2 rounded-lg text-stone-200 bg-violet-900">
               Registrarse
             </button>

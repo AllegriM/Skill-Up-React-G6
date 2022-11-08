@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
 import { useAccessControl } from "../hooks/useAccessControl";
-// import logo from "../assets/img/favi.jfif";
+import { BsFillCheckCircleFill } from "react-icons/bs";
+import { AiOutlineCloseCircle } from "react-icons/ai";
 
 function Login() {
-  const { setDataLogin, dataLogin, login } = useAccessControl();
+  const { setDataLogin, dataLogin, login, resultLogin, stateLogin } =
+    useAccessControl();
 
   const handleChangeValueLogin = (e) => {
     setDataLogin({ ...dataLogin, [e.target.name]: e.target.value });
   };
+
+  const { first_name } = resultLogin;
+  const { error, correct } = stateLogin;
 
   return (
     <>
@@ -41,6 +46,18 @@ function Login() {
                 name="password"
               />
             </label>
+            {error && (
+              <p className="flex flex-row items-center mt-8 text-lg text-center font-semibold">
+                No pudimos encotrar tu Cuenta
+                <AiOutlineCloseCircle className="ml-3 text-3xl text-red-600" />
+              </p>
+            )}
+            {correct && (
+              <p className="flex flex-row items-center mt-8 text-lg text-center font-semibold">
+                {`Bienvenido ${first_name}`}
+                <BsFillCheckCircleFill className="ml-3 text-3xl text-green-500" />
+              </p>
+            )}
             <button className="w-40 h-11 mt-10 p-2 rounded-lg text-stone-200 bg-violet-900">
               Inicia sesión
             </button>
